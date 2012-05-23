@@ -378,11 +378,12 @@ class TokenTests(object):
         self.assertEquals(token_id, new_data_ref.pop('id'))
         self.assertEquals(new_data_ref, data)
 
-        self.token_api.delete_token(token_id)
-        self.assertRaises(exception.TokenNotFound,
-                self.token_api.delete_token, token_id)
-        self.assertRaises(exception.TokenNotFound,
-                self.token_api.get_token, token_id)
+        if not hasattr(self.token_api, 'delete_token_unsupported'):
+            self.token_api.delete_token(token_id)
+            self.assertRaises(exception.TokenNotFound,
+                    self.token_api.delete_token, token_id)
+            self.assertRaises(exception.TokenNotFound,
+                    self.token_api.get_token, token_id)
 
     def test_expired_token(self):
         expire_time = datetime.datetime.utcnow() - datetime.timedelta(
