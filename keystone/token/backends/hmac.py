@@ -16,12 +16,13 @@
 
 from __future__ import absolute_import
 import base64
+import calendar
 import copy
 import datetime
 import hashlib
 import hmac
 import json
-import calendar
+import os
 
 from keystone import exception
 from keystone import token
@@ -64,6 +65,7 @@ class Token(token.Driver):
             raise exception.TokenNotFound(token_id=token_id)
 
         token_ref['id'] = token_id
+        token_ref.pop('_nonce')
 
         if token_ref['expires'] is not None:
             now = datetime.datetime.utcnow()
@@ -91,6 +93,8 @@ class Token(token.Driver):
         if expires_orig is not None:
             data_copy['expires'] = calendar.timegm(expires_orig.utctimetuple())
 
+        data_copy['_nonce'] = os.urandom(16).encode('hex').lower()
+
         data_out = json.dumps(data_copy)
 
         h = hmac.new(secret, digestmod=hashlib.sha1)
@@ -100,6 +104,7 @@ class Token(token.Driver):
         token_id = "%s:%s:%s" % (key_id,
                                  base64.urlsafe_b64encode(hmac_output),
                                  base64.urlsafe_b64encode(data_out))
+        data_copy.pop('_nonce')
         data_copy['id'] = token_id
         data_copy['expires'] = expires_orig
         return (token_id, copy.deepcopy(data_copy))
