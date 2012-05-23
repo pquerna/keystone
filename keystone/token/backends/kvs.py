@@ -16,6 +16,7 @@
 
 import copy
 import datetime
+import uuid
 
 from keystone.common import kvs
 from keystone import exception
@@ -32,12 +33,14 @@ class Token(kvs.Base, token.Driver):
         else:
             raise exception.TokenNotFound(token_id=token_id)
 
-    def create_token(self, token_id, data):
+    def create_token(self, data):
+        token_id = uuid.uuid4().hex
         data_copy = copy.deepcopy(data)
+        data_copy['id'] = token_id
         if 'expires' not in data:
             data_copy['expires'] = self._get_default_expire_time()
         self.db.set('token-%s' % token_id, data_copy)
-        return copy.deepcopy(data_copy)
+        return (token_id, copy.deepcopy(data_copy))
 
     def delete_token(self, token_id):
         try:

@@ -365,16 +365,17 @@ class IdentityTests(object):
 
 class TokenTests(object):
     def test_token_crud(self):
-        token_id = uuid.uuid4().hex
-        data = {'id': token_id, 'a': 'b'}
-        data_ref = self.token_api.create_token(token_id, data)
+        data = {'a': 'b'}
+        (token_id, data_ref) = self.token_api.create_token(data)
         expires = data_ref.pop('expires')
         self.assertTrue(isinstance(expires, datetime.datetime))
+        self.assertEquals(token_id, data_ref.pop('id'))
         self.assertDictEqual(data_ref, data)
 
         new_data_ref = self.token_api.get_token(token_id)
         expires = new_data_ref.pop('expires')
         self.assertTrue(isinstance(expires, datetime.datetime))
+        self.assertEquals(token_id, new_data_ref.pop('id'))
         self.assertEquals(new_data_ref, data)
 
         self.token_api.delete_token(token_id)
@@ -384,19 +385,19 @@ class TokenTests(object):
                 self.token_api.get_token, token_id)
 
     def test_expired_token(self):
-        token_id = uuid.uuid4().hex
         expire_time = datetime.datetime.utcnow() - datetime.timedelta(
                         minutes=1)
-        data = {'id': token_id, 'a': 'b', 'expires': expire_time}
-        data_ref = self.token_api.create_token(token_id, data)
+        data = {'a': 'b', 'expires': expire_time}
+        (token_id, data_ref) = self.token_api.create_token(data)
+        data['id'] = token_id
         self.assertDictEqual(data_ref, data)
         self.assertRaises(exception.TokenNotFound,
                 self.token_api.get_token, token_id)
 
     def test_null_expires_token(self):
-        token_id = uuid.uuid4().hex
-        data = {'id': token_id, 'a': 'b', 'expires': None}
-        data_ref = self.token_api.create_token(token_id, data)
+        data = {'a': 'b', 'expires': None}
+        (token_id, data_ref) = self.token_api.create_token(data)
+        data['id'] = token_id
         self.assertDictEqual(data_ref, data)
         new_data_ref = self.token_api.get_token(token_id)
         self.assertEqual(data_ref, new_data_ref)

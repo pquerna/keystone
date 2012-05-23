@@ -16,6 +16,7 @@
 
 import copy
 import datetime
+import uuid
 
 from keystone.common import sql
 from keystone import exception
@@ -56,8 +57,10 @@ class Token(sql.Base, token.Driver):
         else:
             raise exception.TokenNotFound(token_id=token_id)
 
-    def create_token(self, token_id, data):
+    def create_token(self, data):
+        token_id = uuid.uuid4().hex
         data_copy = copy.deepcopy(data)
+        data_copy['id'] = token_id
         if 'expires' not in data_copy:
             data_copy['expires'] = self._get_default_expire_time()
 
@@ -68,7 +71,7 @@ class Token(sql.Base, token.Driver):
         with session.begin():
             session.add(token_ref)
             session.flush()
-        return token_ref.to_dict()
+        return (token_id, token_ref.to_dict())
 
     def delete_token(self, token_id):
         session = self.get_session()

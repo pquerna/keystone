@@ -14,8 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
-
 import routes
 
 from keystone import catalog
@@ -248,7 +246,8 @@ class TokenController(wsgi.Application):
         that will return a token that is scoped to that tenant.
         """
 
-        token_id = uuid.uuid4().hex
+        token_id = None
+
         if 'passwordCredentials' in auth:
             username = auth['passwordCredentials'].get('username', '')
             password = auth['passwordCredentials'].get('password', '')
@@ -283,9 +282,8 @@ class TokenController(wsgi.Application):
             except AssertionError as e:
                 raise exception.Unauthorized(e.message)
 
-            token_ref = self.token_api.create_token(
-                    context, token_id, dict(id=token_id,
-                                            user=user_ref,
+            (token_id, token_ref) = self.token_api.create_token(
+                                            context, dict(user=user_ref,
                                             tenant=tenant_ref,
                                             metadata=metadata_ref))
             if tenant_ref:
@@ -347,9 +345,8 @@ class TokenController(wsgi.Application):
                 metadata_ref = {}
                 catalog_ref = {}
 
-            token_ref = self.token_api.create_token(
-                    context, token_id, dict(id=token_id,
-                                            user=user_ref,
+            (token_id, token_ref) = self.token_api.create_token(
+                                        context, dict(user=user_ref,
                                             tenant=tenant_ref,
                                             metadata=metadata_ref))
 

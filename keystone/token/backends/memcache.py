@@ -16,6 +16,7 @@
 
 from __future__ import absolute_import
 import copy
+import uuid
 
 import memcache
 
@@ -53,8 +54,10 @@ class Token(token.Driver):
 
         return token
 
-    def create_token(self, token_id, data):
+    def create_token(self, data):
+        token_id = uuid.uuid4().hex
         data_copy = copy.deepcopy(data)
+        data_copy['id'] = token_id
         ptk = self._prefix_token_id(token_id)
         if 'expires' not in data_copy:
             data_copy['expires'] = self._get_default_expire_time()
@@ -63,7 +66,7 @@ class Token(token.Driver):
             expires_ts = utils.unixtime(data_copy['expires'])
             kwargs['time'] = expires_ts
         self.client.set(ptk, data_copy, **kwargs)
-        return copy.deepcopy(data_copy)
+        return (token_id, copy.deepcopy(data_copy))
 
     def delete_token(self, token_id):
         # Test for existence

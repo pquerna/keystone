@@ -53,7 +53,7 @@ class Driver(object):
         """
         raise exception.NotImplemented()
 
-    def create_token(self, token_id, data):
+    def create_token(self, data):
         """Create a token by id and data.
 
         :param token_id: identity of the token
@@ -71,7 +71,7 @@ class Driver(object):
             }
 
         :type data: dict
-        :returns: token_ref or None.
+        :returns: (token_id, token_ref or None)
 
         """
         raise exception.NotImplemented()
