@@ -93,7 +93,7 @@ class Token(token.Driver):
         if expires_orig is not None:
             data_copy['expires'] = calendar.timegm(expires_orig.utctimetuple())
 
-        data_copy['_nonce'] = os.urandom(16).encode('hex').lower()
+        data_copy['_nonce'] = os.urandom(8).encode('hex').lower()
 
         data_out = json.dumps(data_copy)
 
